@@ -1,0 +1,52 @@
+## -*- coding: utf-8 -*-
+
+<%inherit file="../base_template.html"/>
+
+<%block name="previous">/pram</%block>
+
+<%block name="header">
+    PRAM - Sommatoria
+</%block>
+
+<%block name="code">
+def SUM_PRAM(self, a, n):
+	""" P = O(n). """
+	logn = int(math.log(n,2))
+	
+	# Ascending from last node level (not the leaves) to the root of the heap
+	for k in reversed(range(logn)):
+		forall i where i in range(2**k, 2**(k+1)) do in parallel using a:
+			a[i] = a[2*i] + a[2*i+1]
+	
+	# The result is stored at the root of the heap
+	return a[1]
+</%block>
+
+<%block name="input_form">
+	Inserire il vettore <i>a</i> (lungo <i>n</i> potenza di 2) di cui si
+	vuole calcolare la sommatoria:
+	
+	<form method="post" action="/pram/sum/exec">
+		a = <input type="text" name="a" value="[ random.randint(0,10) for i in range(2**8) ]" size="50" />
+		<br />
+		<input type="submit" value="Esegui" />
+	</form>
+	
+	<ul>
+		<li>
+			<i>Nota</i>: È possibile usare le funzioni delle librerie di Python <i>math</i> e <i>random</i>.
+		</li>
+		<li>
+			<i>Esempio</i>: "[ random.randint(0,10) for i in range(2**8) ]" crea
+			un vettore di 2<sup>8</sup> interi random compresi tra 0 e 10.
+		</li>
+	</ul>
+</%block>
+
+<%block name="input_text">
+	Eseguita sommatoria con input:
+</%block>
+
+<%block name="output_text">
+	Risultato della sommatoria:
+</%block>

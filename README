@@ -1,0 +1,270 @@
+========================================================================
+PySAL - Python Synchronous Algorithm Library
+------------------------------------------------------------------------
+Copyright (C) 2012  Matteo Brucato  <mattfeel@gmail.com>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+Libreria `PySAL' per la simulazione di reti di processori
+sincroni interconnessi a grafo (Grado-Limitato e PRAM).
+========================================================================
+========================================================================
+========================================================================
+
+
+########################################################################
+NOTE SULL'AUTORE
+########################################################################
+Questa libreria è stata realizzata da Matteo Brucato, studente del corso 
+di Laurea Magistrale in Informatica, presso l'Università di Bologna,
+durante l'anno accademico 2010/2011.
+
+Se avete domande di qualsiasi tipo sui contenuti, sul codice o quant'altro,
+non esitate a scrivermi a: <mattfeel@gmail.com>. Se volete essere certi
+di passare attraverso i miei filtri anti-spam includede la parola PySAL
+nell'oggetto dell'e-mail.
+
+LinkedIn: http://it.linkedin.com/in/matteobrucato
+
+
+########################################################################
+NOTE SUGLI ALGORITMI
+########################################################################
+Gli algoritmi implementati sono quelli presenti nel libro:
+	Alan A. Bertossi - Algoritmi Paralleli - Pitagora Editrice Bologna
+	ISBN 88-371-1790-6
+
+La sintassi che ho scelto di implementare è totalmente ispirata a quella
+presente nel libro. Gli algoritmi sono identici a quelli del libro, eccezion
+fatta per un algoritmo: la moltiplicazione di matrici su ipercubo.
+
+Il codice sorgente degli algoritmi è contenuto nella cartella "algorithms".
+Tale codice, scritto in linguaggio denominato Pysal, deve essere compilati in 
+Python attraverso lo script "pysal.py", o con il comando make, come descritto 
+in seguito.
+
+Qualunque errore nell'implementazione della libreria e degli algoritmi è 
+da attribuirsi a me.
+
+
+########################################################################
+REQUISITI
+########################################################################
+
+* Versioni di Python
+------------------------------------------------------------------------
+La libreria e gli algoritmi sono stati testati con varie versioni
+di Python: 2.6.5, 2.7.1, 2.7.2, 2.7.3, 3.1.2, 3.2.3.
+
+Il server web locale, invece, funziona solo in Python 2.7.1+ o versione
+di Python 2 successiva (non funziona sulla versione 3).
+
+
+########################################################################
+VISUALIZZAZIONE E UTILIZZO DEGLI ALGORITMI VIA BROWSER
+########################################################################
+
+Entrare con il terminale nella cartella principale. Lanciare i comandi:
+$ make
+$ python webrun.py
+
+Verrà istanziato un micro server web locale, che sarà possibile terminare
+con Ctr-C. Per accedere al server utilizzare un browser web e andare all'
+indirizzo "localhost:8001", oppure "127.0.0.1:8001".
+
+Se il server non dovesse partire per colpa della porta 8001 già occupata
+(cosa alquanto improbabile), modificare il file webrun.py, nella riga in
+cui viene definita la variabile PORT_NUMBER, inserendo un altro valore e
+rilanciare nuovamente il server con "python webrun.py".
+
+
+########################################################################
+UTILIZZO VIA TERMINALE
+########################################################################
+
+* Esecuzione veloce di tutti i test
+------------------------------------------------------------------------
+Utilizzare il seguente comando per eseguire tutti i test presenti in tutti
+gli esempi:
+
+$ make tests
+
+Questo comando compila tutti gli esempi e li esegue uno alla volta. Se 
+un test dovesse fallire, tutta l'esecuzione viene sospesa. In questo modo, 
+essere arrivati alla fine con successo significa che tutti i test sono 
+andati a buon fine.
+
+
+* Compilazione e pulizia automatica degli esempi
+------------------------------------------------------------------------
+Per compilare automaticamente tutti gli esempi presenti nella libreria,
+lanciare il comando:
+
+$ make
+
+Per eliminare i file oggetto (quindi non i sorgenti) e per pulire la 
+cartella dai file .pyc e .pyo creati da Python lanciare il comando:
+
+$ make clean
+
+
+* Compilazione ed esecuzione
+------------------------------------------------------------------------
+Il codice viene scritto in un formato chiamato "pysal", che è quasi Python,
+eccetto per i costrutti paralleli del forall. Si utilizzi lo script "pysal.py"
+per "compilare" tali programmi in Python puro. I programmi da compilare
+devono avere un'estensione .pysal.py.
+
+Per compilare un file .pysal.py, eseguire:
+
+python pysal.py NOMEDELFILE.pysal.py
+
+oppure
+
+./pysal.py NOMEDELFILE.pysal.py
+
+che restituisce un file denominato "out_", seguito dallo stesso nome del file,
+ma senza ".pysal". Il file risultante è in puro Python. Tale file può essere
+eseguito normalmente con Python:
+
+python out_NOMEDELFILE.py
+
+
+########################################################################
+NOTE SUL LINGUAGGIO PYSAL E L'IMPLEMENTAZIONE DEGLI ALGORITMI
+########################################################################
+
+* Sintassi del forall parallelo:
+------------------------------------------------------------------------
+In generale, è parecchio simile a quella del libro, con alcune differenze.
+
+forall ITEM [ as LOCAL_NAME ] where FOR_CONDITIONS do in parallel [ using EXTERNAL_VAR_LIST ]:
+
+Dove ITEM è un'espressione (nel qual caso va rinominata con il costrutto "as
+LOCAL_NAME") oppure il nome di una (nuova) variabile locale al forall; le
+FOR_CONDITIONS sono condizioni assolutamente equivalenti a quelle nei for di
+Python, compresi di annidamenti, if aggiuntivi e quant'altro. Con il facoltativo
+costrutto "using", si può specificare un insieme di variabili già definite
+prima del forall, da passare al forall stesso: esse vanno inserite con
+virgole separatrici.
+
+
+* Definizione degli algoritmi e uso della libreria:
+------------------------------------------------------------------------
+Per definire nuovi algoritmi, creare una sottoclasse del modello sincrono
+che si intende usare. Nella classe creata, aggiungere i metodi che si vogliono
+definire, stando attendi al primo parametro "self" dei metodi, che deve
+sempre avere il nome "self".
+
+Negli esempi proposti, molto spesso gli algoritmi cominciano con una fase
+di denominazione di alcune variabili per usi futuri, come ad esempio l'usatissima
+"logn = int(math.log(n,2))".
+
+La libreria synchronous_shared.py implementa la classe PRAM, da sottoclassare
+per l'implementazione degli algoritmi su PRAM. La libreria synchronous_unshared.py
+implementa invece le classi Hypercube, Mesh e Butterfly (oltre la classe
+Processor utilizzata implicitamente all'interno di esse).
+
+
+* Algoritmi per PRAM:
+------------------------------------------------------------------------
+Gli algoritmi per PRAM sono sorprendentemente simili a quelli del libro.
+
+Attualmente è possibile usare la PRAM solo con vettori. Alla creazione è
+possibile passare un dict contenente le associazioni "nome del vettore" :
+"vettore", per ogni vettore che si vuol far gestire alla PRAM. Oppure, se
+p è una PRAM, si può scrivere p['a'] = [1,2,3] per memorizzare il vettore
+[1,2,3] nella PRAM p, con il nome 'a'.
+
+E' possibile recuperare il vettore denomiato 'a' da una PRAM p, semplicemente
+con p['a']. Lo si può quindi trattare "come fosse" un vero vettore. L'unica
+differenza è che se usato dentro un forall in parallelo, esso verrà gestito
+dalla PRAM in "parallelo". Ad esempio:
+
+a = p['a']
+a[3] = 100
+
+usa il vettore 'a' nella PRAM p, e gli scrive 100 in posizione 3.
+
+Vedere gli esempi completi per ulteriori dettagli.
+
+
+* Algoritmi per reti a grado limitato
+------------------------------------------------------------------------
+Questi algoritmi sono leggermente diversi dal libro. Il forall in questi
+algoritmi viene di solito scritto indicando un'iterazione sui processi della
+rete prescelta, invece che un'iterazione sugli indici dei processi (come 
+avviene nel libro). Ad esempio:
+
+forall self.getproc(i) as P where i in range(0, 2**d) do in parallel:
+
+itera sui processi di indice tra 0 e 2**d, recuperandoli dall'ipercubo con
+la funzione getproc(i), ridenominando ogni processore iterato come "P". Dentro
+al corpo del forall, il nome "P" può essere usato per riferirsi al generico
+processore, quello che appunto sta eseguendo in un dato momento.
+
+Un processore contiene i suoi dati (a differenza della PRAM, dove i vettori 
+erano contenuti in tutta la PRAM stessa, poiché la PRAM è a memoria condivisa!).
+Tali dati possono essere di qualunque tipo (anche non vettori, altra differenza
+dalla PRAM). E' quindi necessario, prima di potere usare i dati nei processori,
+registrarli in essi. Ciò si fa trattando il processore come un dict, ad esempio:
+
+P['a'] = 100
+
+memorizza 100 nella variabile 'a' del processore P. Tale metodo quindi può
+essere usanto anche all'interno dei forall paralleli, per modificare
+le variabili dei singoli processori.
+
+Inoltre, nei modelli a grado limitato è possibile leggere i dati da un
+processore vicino. Per far ciò si usa il metodo .getfrom(varname, neighborindex, ...)
+su un processore. Il metodo legge la variabile "varname" dal processore indicato
+nei campi successivi (uno o più indici, a seconda del tipo di indicizzazione
+usato nella rete). Ad esempio:
+
+P.getfrom('A', D)
+
+legge la variabile 'A' del processore vicino al processore P, di indice D.
+Qualora il processore P non potesse leggere dal processore indicato (poiché
+nella rete non vi è un arco che collega i due processori), verrebbe sollevata
+un'eccezione a runtime.
+
+Ultima nota sul metodo getfrom. In taluni casi è necessario forzare un
+comportamento particolare degli algoritmi paralleli, che è difficile da
+catturare in generale. Ovvero, a volte si vuole leggere una variabile da
+un vicino, ma il valore che esso ha APPENA memorizzato durante il ciclo
+forall attuale! (ciò avviene, ad esempio, nella procedura di mergesort
+bitonico su ipercubo). Per far ciò, è possibile passare un parametro
+"getnew" settato a True alla getfrom, ad esempio:
+
+P['a'] = P.getfrom('b', h - d, getnew=True)
+
+che legge la variabile 'b' del processo vicino a P, a distanza h-d, leggendo
+però il nuovo valore appena settato da quel processo, e memorizzandolo infine
+nella variabile 'a' del processo P.
+
+Un ultimissima nota è relativa alle SHUFFLE. Se si guarda all'esempio della
+sommatoria, si noterà che differisce dalla versione nel libro per il fatto
+che le operazioni di mescolamento, copia e scambio sono effettuate dentro
+tre cicli paralleli differenti. Ciò ovviamente non cambia la complessità
+dell'algoritmo. È necessario far ciò per motivi implementativi, in quanto
+ad ogni fine di un ciclo parallelo, vengono salvati i risultati della computazione
+parallela appena terminata. La shuffle è particolarmente esigente in quanto 
+a tempi di lettura e scrittura, per cui è necessario forzare il salvataggio 
+dei nuovi valori prima di procedere alla lettura o modifica degli stessi.
+Inoltre, noterete che le letture dai processori vicini sono fatte per mezzo
+della funzione inversa di quella del libro. Infatti, nel libro viene indicata
+con una freccia tra due processi A --> B la relazione "il processo A può 
+inviare i dati all'altro processo B", ma nell'implementazione è necessario
+calcolare l'indice di A, ovvero del processo da cui B può leggere per mezzo 
+della chiamata getfrom().

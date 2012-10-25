@@ -1,0 +1,61 @@
+## -*- coding: utf-8 -*-
+
+<%inherit file="../base_template.html"/>
+
+<%block name="previous">/pram</%block>
+
+<%block name="header">
+    PRAM - Sommatoria ottima
+</%block>
+
+<%block name="code">
+def SUM_PRAM_OPT(self, a, n):
+	""" O(n/logn) processors. It's assumed that both n and n/logn are powers of 2."""
+	logn = int(math.log(n,2))
+	
+	# Sequential sums: n/logn groups of logn elements each go in parallel
+	forall i where i in range(n, 2*n, logn) do in parallel using a,n,logn:
+		for j in range(i, i+logn):
+			if j < 2*n:
+				a[i//logn] += a[j]
+	
+	# Now it's like we have n/logn elements to sum up!
+	log_n_over_logn = int(math.log(n/logn,2))
+	
+	# Ascending from last node level (not the leaves) to the root of the heap
+	for k in reversed(range(log_n_over_logn)):
+		forall i where i in range(2**k, 2**(k+1)) do in parallel using a:
+			a[i] = a[2*i] + a[2*i+1]
+	
+	# The result is stored at the root of the heap
+	return a[1]
+</%block>
+
+<%block name="input_form">
+	Inserire il vettore <i>a</i> (lungo <i>n</i> potenza di 2, tale che <i>log n</i> sia anch'esso potenza di 2) di cui si
+	vuole calcolare la sommatoria:
+	
+	<form method="post" action="/pram/sum_opt/exec">
+		a = <input type="text" name="a" value="[ random.randint(0,10) for i in range(2**8) ]" size="50" />
+		<br />
+		<input type="submit" value="Esegui" />
+	</form>
+	
+	<ul>
+		<li>
+			<i>Nota</i>: È possibile usare le funzioni delle librerie di Python <i>math</i> e <i>random</i>.
+		</li>
+		<li>
+			<i>Esempio</i>: "[ random.randint(0,10) for i in range(2**8) ]" crea
+			un vettore di 2<sup>8</sup> interi random compresi tra 0 e 10.
+		</li>
+	</ul>
+</%block>
+
+<%block name="input_text">
+	Eseguita sommatoria con input:
+</%block>
+
+<%block name="output_text">
+	Risultato della sommatoria:
+</%block>

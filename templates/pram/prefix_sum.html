@@ -1,0 +1,55 @@
+## -*- coding: utf-8 -*-
+
+<%inherit file="../base_template.html"/>
+
+<%block name="previous">/pram</%block>
+
+<%block name="header">
+    PRAM - Somme prefisse
+</%block>
+
+<%block name="code">
+def PREFIX_SUM_PRAM(self, a, b, n):
+	""" O(n) processors. """
+	logn = int(math.log(n,2))
+	
+	# Set the root with the summation of 'a'
+	b[1] = self.SUM_PRAM(a, n)
+	
+	# Execute prefix sum in O(log n), using O(n) processors
+	for k in range(1, logn+1):
+		forall i where i in range(2**k, 2**(k+1)) do in parallel using a,b:
+			if i%2==1: # right child
+				b[i] = b[i//2]
+			else:      # left child
+				b[i] = b[i//2] - a[i+1]
+</%block>
+
+<%block name="input_form">
+	Inserire il vettore <i>a</i> (lungo <i>n</i> potenza di 2) di cui si
+	vuole calcolare le somme prefisse:
+	
+	<form method="post" action="/pram/prefix_sum/exec">
+		a = <input type="text" name="a" value="[ random.randint(0,10) for i in range(2**8) ]" size="50" />
+		<br />
+		<input type="submit" value="Esegui" />
+	</form>
+	
+	<ul>
+		<li>
+			<i>Nota</i>: È possibile usare le funzioni delle librerie di Python <i>math</i> e <i>random</i>.
+		</li>
+		<li>
+			<i>Esempio</i>: "[ random.randint(0,10) for i in range(2**8) ]" crea
+			un vettore di 2<sup>8</sup> interi random compresi tra 0 e 10.
+		</li>
+	</ul>
+</%block>
+
+<%block name="input_text">
+	Eseguite somme prefisse con input:
+</%block>
+
+<%block name="output_text">
+	Contenuto del vettore <i>b</i> al termine della computazione:
+</%block>

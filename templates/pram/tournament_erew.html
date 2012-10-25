@@ -1,0 +1,86 @@
+## -*- coding: utf-8 -*-
+
+<%inherit file="../base_template.html"/>
+
+<%block name="previous">/pram</%block>
+
+<%block name="header">
+    PRAM - Torneo EREW
+</%block>
+
+<%block name="code">
+def TOURNAMENT_SORT_EREW(self, a, n):
+	""" O(n^2) processors. Assuming n power of 2. """
+	self['V'] = [ [ None for i in range(0, n+1) ] for i in range(0, n+1) ] # Matrix for 1s and 0s
+	self['R'] = [ [ None for i in range(0, n+1) ] for i in range(0, n+1) ] # Matrix for row-wise replicas
+	self['C'] = [ [ None for i in range(0, n+1) ] for i in range(0, n+1) ] # Matrix for column-wise replicas
+	self['S'] = [ None for i in range(0, n+1) ]                            # Vector for columns summations
+	V = self['V'] # Renaming, just for syntactic similicity
+	R = self['R'] # Renaming, just for syntactic similicity
+	C = self['C'] # Renaming, just for syntactic similicity
+	S = self['S'] # Renaming, just for syntactic similicity
+	
+	# Replication phase: copy each element of 'a' into a row of the matrix R and C
+	forall i where i in range(1, n+1) do in parallel using a,n,R,C:
+		self.REPLICATE(R[i], a[i], n)
+		self.REPLICATE(C[i], a[i], n)
+	
+	# Perform the tournament in O(1)
+	forall (i,j) where i in range(1, n+1) where j in range(1, n+1) do in parallel using a,V,R,C:
+		V[i][j] = 1 if R[i][j] <= C[j][i] else 0
+	
+	# Perform summations over columns in O(logn)
+	forall i where i in range(1, n+1) do in parallel using V,n,S:
+		# Prepare PRAM for summation
+		csum = [ None for k in range(0, 2*n) ]
+		for k in range(1, n):   csum[k] = 0
+		for k in range(n, 2*n): csum[k] = V[k-n+1][i] # <-- copy i'th column of V
+		self['subsum'] = csum
+		
+		# Execute summation of column
+		S[i] = self.SUM_PRAM(self['subsum'], n)
+	
+	# Place every number in the right position in O(1)
+	forall i where i in range(1, n+1) do in parallel using a,S:
+		a[S[i]] = a[i]
+	
+	return a
+</%block>
+
+<%block name="input_form">
+	Inserire il vettore <i>a</i> (di <i>n</i> potenza di 2 interi <u>tutti distinti</u>) che si vuole ordinare:
+	
+	<form method="post" action="/pram/tournament_erew/exec">
+		a = <input type="text" name="a" value="[ i for i in reversed(range(2**5)) ]" size="50" />
+		<br />
+		<input type="submit" value="Esegui" />
+	</form>
+	
+	<ul>
+		<li>
+			<i>Esempio 1</i>: "[-5,6,0,10,-6,-7,1,2]".
+		</li>
+		<li>
+			<i>Esempio 2</i>: "[ i for i in reversed(range(2**5)) ]" crea un vettore contenente
+			i primi 2<sup>5</sup> interi a partire da 0, ordinati in modo decrescente.
+		</li>
+		<li>
+			<i>Nota</i>: È possibile usare le funzioni delle librerie di Python <i>math</i> e <i>random</i>.
+		</li>
+		<li>
+			<i>Nota</i>: Immettere "random(<i>n</i>)" se si desidera ottenere 
+			un vettore di <i>n</i> interi random tutti distinti tra loro.
+		</li>
+		<li>
+			<i>Esempio 3</i>: "random(2**5)" crea un vettore di 2<sup>5</sup> interi random distinti.
+		</li>
+	</ul>
+</%block>
+
+<%block name="input_text">
+	Eseguito ordinamento del vettore:
+</%block>
+
+<%block name="output_text">
+	Risultato dell'ordinamento (vettore indicizzato da 1):
+</%block>

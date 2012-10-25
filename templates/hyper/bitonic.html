@@ -1,0 +1,59 @@
+## -*- coding: utf-8 -*-
+
+<%inherit file="../base_template.html"/>
+
+<%block name="previous">/hyper</%block>
+
+<%block name="header">
+    Ipercubo - Bitonic Mergesort
+</%block>
+
+<%block name="code">
+def BITONIC_MERGESORT_HYPERCUBE(self):
+	k = self.k
+	n = 2**k
+
+	# Do k=log(n) iterations 'i'
+	for i in range(0, k):
+		# For each iteration 'i' do i+1 passes 'j'
+		for j in reversed(range(0, i+1)):
+			d = 2**j     # <-- distance from neighbor to read data from
+			forall h as P where h in range(0, n) do in parallel using i,d:
+				if h % (2*d) < d:
+					t = P.getfrom('a', h + d)
+					if h % 2**(i+2) < 2**(i+1):
+						P['b'] = max(P['a'], t)
+						P['a'] = min(P['a'], t)
+					else:
+						P['b'] = min(P['a'], t)
+						P['a'] = max(P['a'], t)
+				else:
+					P['a'] = P.getfrom('b', h - d, getnew=True)
+</%block>
+
+<%block name="input_form">
+	Inserire il vettore <i>a</i> di lunghezza potenza di 2 che si vuole ordinare:
+	
+	<form method="post" action="/hyper/bitonic/exec">
+		a = <input type="text" name="a" value="[ random.randint(-5,5) for i in range(2**8) ]" size="50" />
+		<br />
+		<input type="submit" value="Esegui" />
+	</form>
+	
+	<ul>
+		<li>
+			<i>Nota</i>: È possibile usare le funzioni delle librerie di Python <i>math</i> e <i>random</i>.
+		</li>
+		<li>
+			<i>Esempio</i>: "[ random.randint(-5,5) for i in range(2**8) ]" crea
+			un vettore di 2<sup>8</sup> interi random compresi tra -5 e 5.
+		</li>
+	</ul>
+</%block>
+
+<%block name="input_text">
+	Eseguito bitonic mergesort su ipercubo con input:
+</%block>
+<%block name="output_text">
+	Al termine della computazione l'ipercubo contiene nelle variabili <i>a</i>:
+</%block>

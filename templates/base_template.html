@@ -1,0 +1,81 @@
+## -*- coding: utf-8 -*-
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>PySAL</title>
+		<meta charset="utf-8">
+		<link type="text/css" rel="stylesheet" href="/statics/syntaxhighlighter_3.0.83/styles/shCore.css"></link>
+		<link type="text/css" rel="stylesheet" href="/statics/syntaxhighlighter_3.0.83/styles/shThemeDefault.css"></link>
+		<script language="javascript" src="/statics/syntaxhighlighter_3.0.83/scripts/shCore.js"></script>
+		<script language="javascript" src="/statics/syntaxhighlighter_3.0.83/scripts/shBrushPySAL.js"></script>
+		<script language="javascript" src="/statics/js/jquery-1.8.1.min.js"></script>
+		<script language="javascript">
+		function send_data(form) {
+			$.ajax({
+				type: 'POST',
+				url: $(form).attr('action'),
+				data: $(form).serialize(),
+				dataType: 'json',
+				success: function(data) {
+					if (typeof (data.error) != 'undefined') {
+						$('#error_text').html(data.error);
+						$('#error').show(100);
+					}
+					else {
+						if (typeof (data.input) != 'undefined') {
+							$('#input').html(data.input);
+							$('#input_info').show(0);
+						}
+						else {
+							$('#input_info').hide(0);
+						}
+						$('#result').html(data.result);
+						$('#output').show(100);
+					}
+				}
+			});
+		}
+		
+		$(document).ready(function() {
+			$('form').submit(function(event) {
+				event.preventDefault();
+				$('#error').hide(0, $('#output').hide(100, send_data(this)));
+			});
+		});
+		</script>
+	</head>
+	<body>
+		<h1><a href="<%block name="previous"/>">&crarr;</a> <%block name="header"/></h1>
+		<pre class="brush:py">${code}</pre>
+		## <pre class="brush:py"><%block name="code"/></pre>
+		
+		<h2>Input</h2>
+		<%block name="input_form"/>
+		
+		<h2>Output</h2>
+		<div id="output" style="display:none;">
+			<p id="input_info">
+				<%block name="input_text"/>
+				<br />
+				<span id="input"></span>
+			</p>
+			<p>
+				<%block name="output_text"/>
+				<br />
+				<span id="result"></span>
+			</p>
+		</div>
+		
+		<div id="error" style="display:none; color:red;">
+			<b>Errore</b>:
+			<span id="error_text"></span>
+		</div>
+	
+		<script language="javascript">
+			//SyntaxHighlighter.ClipboardSwf = '/flash/clipboard.swf';
+			//SyntaxHighlighter.defaults['smart-tabs'] = true;
+			//SyntaxHighlighter.defaults['toolbar'] = true;
+			SyntaxHighlighter.all();
+		</script>
+	</body>
+</html>

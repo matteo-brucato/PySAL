@@ -1,0 +1,69 @@
+## -*- coding: utf-8 -*-
+
+<%inherit file="../base_template.html"/>
+
+<%block name="previous">/hyper</%block>
+
+<%block name="header">
+    Ipercubo - Moltiplicazione di matrici
+</%block>
+
+<%block name="code">
+def MATRIX_MULTIPLICATION_HYPERCUBE(self):
+	k = self.k
+	h = k//3
+	
+	# First phase: Distribution of data on the entire hypercube, in O(log n) time
+	for p in range(2*h, 3*h): # Distribution of A's and B's along dimension 'k'
+		forall m as P where m in range(2**p, 2**(p+1)) do in parallel using p:
+			D = COMPLEMENTA(m, p)
+			P['A'] = P.getfrom('A', D)
+			P['B'] = P.getfrom('B', D)
+	
+	for p in reversed(range(0,h)): # Distribution of A's along dimension 'j'
+		forall m as P where m in range(0, 2**(3*h)) if BIT(m,p) != BIT(m,2*h+p) do in parallel using p:
+			D = COMPLEMENTA(m, p)
+			P['A'] = P.getfrom('A', D)
+	
+	for p in reversed(range(h, 2*h)): # Distribution of B's along dimension 'i'
+		forall m as P where m in range(0, 2**(3*h)) if BIT(m,p) != BIT(m,h+p) do in parallel using p:
+			D = COMPLEMENTA(m, p)
+			P['B'] = P.getfrom('B', D)
+	
+	# Second phase: Multiplications in O(1) time
+	forall m as P where m in range(0, 2**(3*h)) do in parallel:
+		P['C'] = P['A'] * P['B']
+	
+	# Third phase: Summations in O(log n) time
+	for p in range(2*h, 3*h):
+		forall m as P where m in range(0, 2**(3*h)) do in parallel using p:
+			D = COMPLEMENTA(m, p)
+			E = P.getfrom('C', D)
+			P['C'] = P['C'] + E
+</%block>
+
+<%block name="input_form">
+	Inserire le matrici quadrate <i>A</i> e <i>B</i> che si vogliono moltiplicare, 
+	avendo accortezza che la loro dimensione sia uguale e sia una potenza di 2:
+	
+	<form method="post" action="/hyper/multmatrix/exec">
+		A = <input type="text" name="A" value="1,2; 3,4" size="50" />
+		<br />
+		B = <input type="text" name="B" value="-5,-6; 7,8" size="50" />
+		<br />
+		<input type="submit" value="Esegui" />
+	</form>
+	
+	<ul>
+		<li>
+			<i>Nota</i>: Immettere stringhe nel formato di <i>numpy.matrix</i>.
+		</li>
+	</ul>
+</%block>
+
+<%block name="input_text">
+	Eseguito bitonic mergesort su ipercubo con input:
+</%block>
+<%block name="output_text">
+	Matrice prodotto risultante:
+</%block>

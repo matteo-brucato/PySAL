@@ -1,0 +1,69 @@
+## -*- coding: utf-8 -*-
+
+<%inherit file="../base_template.html"/>
+
+<%block name="previous">/mesh</%block>
+
+<%block name="header">
+    Mesh - Sommatoria
+</%block>
+
+<%block name="code">
+def SUM_MESH(self, propagate=False):
+	n = self.n
+	
+	# Parallel vertical sums
+	for i in reversed(range(n-1)):
+		forall (i,j) as P where j in range(0,n) do in parallel:
+			b = P.getfrom('a', i+1, j)
+			P['a'] = P['a'] + b
+	
+	# Sequentially sum row 0
+	for j in reversed(range(n-1)):
+		P = self.getproc(0,j)
+		a = P.getfrom('a', 0, j+1)
+		P['a'] = P['a'] + a
+	
+	# Propagation
+	if not propagate: return
+	for j in range(1,n):
+		P = self.getproc(0,j)
+		a = P.getfrom('a', 0, j-1)
+		P['a'] = a
+	for i in range(1,n):
+		forall (i,j) as P where j in range(0,n) do in parallel:
+			b = P.getfrom('a', i-1, j)
+			P['a'] = b
+</%block>
+
+<%block name="input_form">
+	Inserire il vettore <i>a</i> (di lunghezza <i>n</i> = <i>p</i><sup>2</sup> per un
+	certo <i>p</i>) di cui si vuole effettuare la sommatoria e 
+	"True" o "False" nel campo <i>propaga</i> ad indicare se si vuole propagare o meno il risultato a tutti
+	i processori della mesh:
+	
+	<form method="post" action="/mesh/sum/exec">
+		a = <input type="text" name="a" value="[ i for i in range(7*7) ]" size="50" />
+		<br />
+		propaga = <input type="text" name="propagate" value="False" size="10" />
+		<br />
+		<input type="submit" value="Esegui" />
+	</form>
+	
+	<ul>
+		<li>
+			<i>Nota</i>: È possibile usare le funzioni delle librerie di Python <i>math</i> e <i>random</i>.
+		</li>
+		<li>
+			<i>Esempio</i>: a = "[ i for i in range(7*7) ]" crea una mesh contenente i primi 49 numeri
+			naturali a partire da 0.
+		</li>
+	</ul>
+</%block>
+
+<%block name="input_text">
+	Eseguita sommatoria su mesh con input:
+</%block>
+<%block name="output_text">
+	Al termine della computazione la mesh contiene nelle variabili <i>a</i>:
+</%block>

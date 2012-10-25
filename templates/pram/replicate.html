@@ -1,0 +1,32 @@
+## -*- coding: utf-8 -*-
+
+<%inherit file="../base_template.html"/>
+
+<%block name="previous">/pram</%block>
+
+<%block name="header">
+    PRAM - Replica
+</%block>
+
+<%block name="input_form">
+	Inserire il numero di copie <i>n</i> (potenza di 2) e il dato <i>d</i> da copiare nel
+	vettore <i>cpy</i>:
+	
+	<form method="post" action="/pram/replicate/exec">
+		n = <input type="text" name="ncopies" value="2**5" size="20" />
+		<br />
+		d = <input type="text" name="datum" value="random.randint(0,100)" size="20" />
+		<br />
+		<input type="submit" value="Esegui" />
+	</form>
+	
+	<ul>
+		<li>
+			<i>Nota</i>: È possibile usare le funzioni delle librerie di Python <i>math</i> e <i>random</i>.
+		</li>
+	</ul>
+</%block>
+
+<%block name="output_text">
+	Contenuto del vettore <i>cpy</i> dopo la computazione:
+</%block>
