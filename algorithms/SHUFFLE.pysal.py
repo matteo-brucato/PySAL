@@ -1,6 +1,6 @@
 #coding=utf-8
 """
-PySAL - Python Synchronous Algorithm Library
+PySAL - Python Synchronous Algorithms Library
 ------------------------------------------------------------------------
 Copyright (C) 2012  Matteo Brucato  <mattfeel@gmail.com>
 
